@@ -400,6 +400,9 @@ func main() {
 			if err != nil {
 				return err
 			}
+			if len(saves) <= 1 {
+				return errors.New("no save to be deleted")
+			}
 			for idx, save := range saves {
 				if idx > 0 {
 					path := filepath.Join(rootSaveDir, name, save)
@@ -431,7 +434,6 @@ func main() {
 				v.Set("error", err.Error())
 			}
 			c.Redirect(http.StatusMovedPermanently, "/game/"+name+"?"+v.Encode())
-
 		}
 	}
 	engine.POST("/game/:name/rec/:zip", gamesaveWrap(
