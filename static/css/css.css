@@ -1,0 +1,33 @@
+pre.error {
+    background-color: darkred;
+    color: white;
+    padding: 1em;
+}
+
+div {
+    margin: 1em;
+}
+
+div.box {
+    text-align: center;
+    border: black solid 1px;
+    width: 100px;
+    height: 100px;
+    float: left;
+    overflow-wrap: break-word;
+}
+
+div.box form {
+    width: 100%;
+    height: 100%;
+}
+
+div.box form button {
+    width: 100%;
+    height: 100%;
+}
+
+div.box form button.delete {
+    width: unset;
+    height: unset;
+}
