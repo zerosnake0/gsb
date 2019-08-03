@@ -1,11 +1,17 @@
-pre.error {
+div {
+    margin: 1em;
+}
+
+form {
+    font-family: monospace;
+}
+
+div.error {
     background-color: darkred;
     color: white;
     padding: 1em;
-}
-
-div {
-    margin: 1em;
+    white-space: pre-wrap;
+    font-family: monospace;
 }
 
 div.box {
