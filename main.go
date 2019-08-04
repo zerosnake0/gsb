@@ -106,13 +106,12 @@ func createFile(path string) (*os.File, error) {
 }
 
 func zipIntoFp(src string, fp *os.File) error {
-	log.Printf("+ creating zip for %s ...", src)
 	zw := zip.NewWriter(fp)
 	defer zw.Close()
 
 	root := filepath.Dir(src)
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
-		log.Printf("> compressing %s", path)
+		log.Printf("> %s", path)
 		if err != nil {
 			return err
 		}
@@ -149,6 +148,7 @@ func zipIntoFp(src string, fp *os.File) error {
 }
 
 func backupToZip(src, tgt string) error {
+	log.Printf("~ %s -> %s", src, tgt)
 	fp, err := createFile(tgt)
 	if err != nil {
 		return err
@@ -158,7 +158,7 @@ func backupToZip(src, tgt string) error {
 }
 
 func recoverFromZip(src, tgt string) error {
-	log.Printf("~ recovering zip to %s ...", tgt)
+	log.Printf("~ %s <- %s", tgt, src)
 	var tmpPath string
 	_, err := os.Stat(src)
 	if err != nil {
@@ -199,14 +199,15 @@ func recoverFromZip(src, tgt string) error {
 		for _, f := range fp.File {
 			path := filepath.Join(root, f.Name)
 			info := f.FileInfo()
-			log.Printf("< decompressing %s (%v)...", path, info.IsDir())
 			if info.IsDir() {
+				log.Printf("+ %s ...", path)
 				if err := os.MkdirAll(path, info.Mode()); err != nil {
 					log.Printf("unable to mkdir: %v", err)
 					return err
 				}
 				continue
 			}
+			log.Printf("< %s ...", path)
 			rc, err := f.Open()
 			if err != nil {
 				log.Printf("unable to open file in zip: %v", err)
@@ -378,7 +379,6 @@ func main() {
 			for i := 0; i < 3; i++ {
 				tgt := filepath.Join(rootSaveDir, name, time.Now().UTC().Format(zipNameFormat))
 				if _, err := os.Stat(tgt); os.IsNotExist(err) {
-					log.Printf("creating %s ...", tgt)
 					return backupToZip(cfg.Src, tgt)
 				}
 				time.Sleep(time.Second)
