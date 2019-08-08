@@ -33,6 +33,10 @@ div.box form button {
     height: 100%;
 }
 
+div.box form button.recover {
+    background-color: lightgreen;
+}
+
 div.box form button.delete {
     width: unset;
     height: unset;

@@ -24,7 +24,7 @@
 {{ range .saves }}
 <div class="box">
     <form method="post" action="/game/{{ $.name }}/rec/{{ . }}">
-        <button type="submit">{{ . }}</button>
+        <button {{ if eq $.recover . }}class="recover"{{ end }} type="submit">{{ . }}</button>
     </form>
     <form method="post" action="/game/{{ $.name }}/del/{{ . }}">
         <button class="delete" type="submit">-</button>

@@ -348,7 +348,8 @@ func main() {
 
 	engine.GET("/game/:name", func(c *gin.Context) {
 		var p struct {
-			Error string `form:"error"`
+			Error   string `form:"error"`
+			Recover string `form:"recover"`
 		}
 		if err := c.ShouldBindQuery(&p); err != nil {
 			c.String(http.StatusBadRequest, err.Error())
@@ -362,9 +363,10 @@ func main() {
 			return
 		}
 		c.HTML(http.StatusOK, "/static/html/game.html", gin.H{
-			"error": p.Error,
-			"name":  name,
-			"saves": saves,
+			"error":   p.Error,
+			"name":    name,
+			"saves":   saves,
+			"recover": p.Recover,
 		})
 	})
 
@@ -419,7 +421,7 @@ func main() {
 		c.Redirect(http.StatusMovedPermanently, "/game/"+name+"?"+v.Encode())
 	})
 
-	gamesaveWrap := func(cb func(name, zipName string, cfg *saveConfig) error) gin.HandlerFunc {
+	gamesaveWrap := func(cb func(name, zipName string, cfg *saveConfig, v url.Values) error) gin.HandlerFunc {
 		return func(c *gin.Context) {
 			name := c.Param("name")
 			zipName := c.Param("zip")
@@ -429,7 +431,7 @@ func main() {
 				if err != nil {
 					return err
 				}
-				return cb(name, zipName, cfg)
+				return cb(name, zipName, cfg, v)
 			}(); err != nil {
 				v.Set("error", err.Error())
 			}
@@ -437,13 +439,18 @@ func main() {
 		}
 	}
 	engine.POST("/game/:name/rec/:zip", gamesaveWrap(
-		func(name, zipName string, cfg *saveConfig) error {
+		func(name, zipName string, cfg *saveConfig, v url.Values) error {
 			recoverLock.Lock()
 			defer recoverLock.Unlock()
-			return recoverFromZip(filepath.Join(rootSaveDir, name, zipName), cfg.Src)
+			if err := recoverFromZip(filepath.Join(rootSaveDir, name, zipName),
+				cfg.Src); err != nil {
+				return err
+			}
+			v.Set("recover", zipName)
+			return nil
 		}))
 	engine.POST("/game/:name/del/:zip", gamesaveWrap(
-		func(name, zipName string, cfg *saveConfig) error {
+		func(name, zipName string, cfg *saveConfig, v url.Values) error {
 			deleteLock.Lock()
 			defer deleteLock.Unlock()
 			saves, err := getAllSaves(name)
